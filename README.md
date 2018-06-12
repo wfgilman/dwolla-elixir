@@ -50,7 +50,7 @@ You can also pass in a custom configuration for [HTTPoison](https://github.com/e
 
 ## Tests and Style
 
-This library uses [bypass](https://github.com/PSPDFKit-labs/bypass) to simulate HTTP responses from Plaid.
+This library uses [bypass](https://github.com/PSPDFKit-labs/bypass) to simulate HTTP responses from Dwolla.
 
 Run tests using `mix test`.
 
