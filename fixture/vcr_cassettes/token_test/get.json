@@ -1,0 +1,37 @@
+[
+  {
+    "request": {
+      "body": "client_id=Q4WpGibEGPV9KUY3YmB9tVkqRphPJg5PAfGU0HdkdWU8huHMwS&client_secret=0jLr0xPuBJ7cWGxwmwHXGbus5NTc739fvH6KrN9RjmRwh6YVSx&grant_type=client_credentials",
+      "headers": {
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      "method": "post",
+      "options": {
+        "recv_timeout": 10000,
+        "connect_timeout": 10000
+      },
+      "request_body": "",
+      "url": "https://sandbox.dwolla.com/oauth/v2/token"
+    },
+    "response": {
+      "body": "{\"access_token\":\"0l6Vijvre4ICDV9SltG3KbekbtrGOPoQcP5XITsEKWH5L5me0S\",\"token_type\":\"bearer\",\"expires_in\":3601}",
+      "headers": {
+        "Date": "Tue, 02 May 2017 21:08:20 GMT",
+        "Content-Type": "application/json; charset=utf-8",
+        "Content-Length": "109",
+        "Connection": "keep-alive",
+        "Set-Cookie": "__cfduid=d1ebcbdc65e304efc3804d4055bab37131493759299; expires=Wed, 02-May-18 21:08:19 GMT; path=/; domain=.dwolla.com; HttpOnly",
+        "Cache-Control": "private",
+        "p3p": "CP=\"CAO PSA OUR\"",
+        "Strict-Transport-Security": "max-age=31536000",
+        "X-AspNetMvc-Version": "4.0",
+        "X-Content-Type-Options": "nosniff",
+        "X-XSS-Protection": "1; mode=block",
+        "Server": "cloudflare-nginx",
+        "CF-RAY": "358df485cf59773c-LAX"
+      },
+      "status_code": 200,
+      "type": "ok"
+    }
+  }
+]
