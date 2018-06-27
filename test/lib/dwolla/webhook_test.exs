@@ -26,9 +26,9 @@ defmodule Dwolla.WebhookTest do
       assert resp.__struct__ == Dwolla.Webhook
       refute resp.id == nil
       refute resp.topic == nil
-      refute resp.accountId == nil
-      refute resp.eventId == nil
-      refute resp.subscriptionId == nil
+      refute resp.account_id == nil
+      refute resp.event_id == nil
+      refute resp.subscription_id == nil
       assert Enum.count(resp.attempts) == 1
       attempt = List.first(resp.attempts)
       assert attempt.__struct__ == Dwolla.Webhook.Attempt
@@ -41,7 +41,7 @@ defmodule Dwolla.WebhookTest do
       assert attempt.response.__struct__ == Dwolla.Webhook.Attempt.Response
       refute attempt.response.timestamp == nil
       refute attempt.response.headers == []
-      refute attempt.response.statusCode == nil
+      refute attempt.response.status_code == nil
       refute attempt.response.body == nil
     end
 

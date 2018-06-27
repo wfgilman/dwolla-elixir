@@ -2,7 +2,7 @@ defmodule Dwolla do
   @moduledoc """
   An HTTP Client for Dwolla.
 
-  Dwolla API Docs: https://docsv2.dwolla.com/
+  [Dwolla API Docs](https://docsv2.dwolla.com)
   """
 
   use HTTPoison.Base
@@ -64,13 +64,13 @@ defmodule Dwolla do
   end
 
   @doc """
-  Makes request with token. Raises on failure.
+  Makes request with token.
   """
   @spec make_request_with_token(atom, String.t, String.t, map, map, Keyword.t) ::
-    {:ok, HTTPoison.Response.t} | {:error, HTTPoison.Error.t}
+    {:ok, HTTPoison.Response.t} | {:error, HTTPoison.Error.t | {:invalid, binary}}
   def make_request_with_token(method, endpoint, token, body \\ %{}, headers \\ %{}, options \\ []) do
-    rb = maybe_encode(body)
-    rh = get_request_headers(token) |> Map.merge(headers) |> Map.to_list()
+    rb = body |> Utils.to_camel_case() |> maybe_encode()
+    rh = token |> get_request_headers() |> Map.merge(headers) |> Map.to_list()
     options = httpoison_request_options() ++ options
     request(method, endpoint, rb, rh, options)
   end
@@ -79,7 +79,7 @@ defmodule Dwolla do
   defp maybe_encode(body), do: Poison.encode!(body)
 
   @doc """
-  Makes request to OAuth endpoint with credentials. Raises on failure.
+  Makes request to OAuth endpoint with credentials.
   """
   @spec make_oauth_token_request(map, map, list) ::
     {:ok, HTTPoison.Response.t} | {:error, HTTPoison.Error.t}

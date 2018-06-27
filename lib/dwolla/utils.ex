@@ -5,12 +5,6 @@ defmodule Dwolla.Utils do
 
   require Logger
 
-  alias Dwolla.{Token, Errors, Customer, FundingSource, Transfer,
-                Transfer.Amount, Transfer.Metadata, FundingSource.Balance,
-                Transfer.Failure, Event, WebhookSubscription, Webhook.Attempt,
-                Webhook.Attempt.Request, Webhook.Attempt.Response, Webhook,
-                Webhook.Retry, Document}
-
   @doc """
   Encodes HTTP request.
   """
@@ -57,6 +51,46 @@ defmodule Dwolla.Utils do
   end
 
   @doc """
+  Converts keys in Dwolla response to Elixir-friendly snake case.
+  """
+  def to_snake_case(response) when is_binary(response), do: response
+  def to_snake_case(response) when is_map(response) do
+    response
+    |> Map.to_list()
+    |> Stream.map(fn {k, v} ->
+        cond do
+        is_map(v) ->
+          {Recase.to_snake(k), to_snake_case(v)}
+        is_list(v) ->
+          {Recase.to_snake(k), Enum.map(v, &to_snake_case/1)}
+        true ->
+          {Recase.to_snake(k), v}
+        end
+      end)
+    |> Enum.into(%{})
+  end
+
+  @doc """
+  Converts request payload to Dwolla-friendly camel case.
+  """
+  def to_camel_case(payload) when is_map(payload) do
+    payload
+    |> Map.to_list()
+    |> Stream.map(fn {k, v} -> {to_string(k), v} end)
+    |> Stream.map(fn {k, v} ->
+        if is_map(v) do
+          {Recase.to_camel(k), to_camel_case(v)}
+        else
+          {Recase.to_camel(k), v}
+        end
+      end)
+    |> Enum.into(%{})
+  end
+  def to_camel_case(payload) do
+    payload
+  end
+
+  @doc """
   Handles HTTP response from Dwolla.
   """
   @spec handle_resp({:ok, HTTPoison.Response.t} | {:error, HTTPoison.Error.t}, atom) ::
@@ -65,7 +99,7 @@ defmodule Dwolla.Utils do
     {:error, body}
   end
   def handle_resp({:ok, %{status_code: 200, body: %{"error" => _} = body}}, _schema) do
-    {:error, %Errors{code: body["error"], message: body["error_description"]}}
+    {:error, %Dwolla.Errors{code: body["error"], message: body["error_description"]}}
   end
   def handle_resp({:ok, %{status_code: code, body: ""} = resp}, _schema) when code in 200..201 do
     {:ok, get_resource_id_from_headers(resp.headers)}
@@ -81,37 +115,47 @@ defmodule Dwolla.Utils do
   end
 
   defp map_body(%{"_embedded" => %{"customers" => customers}}, schema) do
-    Enum.map customers, &map_body(&1, schema)
+    Enum.map(customers, &map_body(&1, schema))
   end
   defp map_body(%{"_embedded" => %{"funding-sources" => funding_sources}}, schema) do
-    Enum.map funding_sources, &map_body(&1, schema)
+    Enum.map(funding_sources, &map_body(&1, schema))
   end
   defp map_body(%{"_embedded" => %{"transfers" => transfers}}, schema) do
-    Enum.map transfers, &map_body(&1, schema)
+    Enum.map(transfers, &map_body(&1, schema))
   end
   defp map_body(%{"_embedded" => %{"webhook-subscriptions" => webhook_subs}}, schema) do
-    Enum.map webhook_subs, &map_body(&1, schema)
+    Enum.map(webhook_subs, &map_body(&1, schema))
   end
   defp map_body(%{"_embedded" => %{"webhooks" => webhooks}}, schema) do
-    Enum.map webhooks, &map_body(&1, schema)
+    Enum.map(webhooks, &map_body(&1, schema))
   end
   defp map_body(%{"_embedded" => %{"retries" => retries}}, schema) do
-    Enum.map retries, &map_body(&1, schema)
+    Enum.map(retries, &map_body(&1, schema))
   end
   defp map_body(%{"_embedded" => %{"events" => events}}, schema) do
-    Enum.map events, &map_body(&1, schema)
+    Enum.map(events, &map_body(&1, schema))
   end
   defp map_body(%{"_embedded" => %{"documents" => documents}}, schema) do
-    Enum.map documents, &map_body(&1, schema)
+    Enum.map(documents, &map_body(&1, schema))
   end
   defp map_body(body, :customer) do
-    Poison.Decode.decode(body, as: %Customer{})
+    body
+    |> to_snake_case()
+    |> Poison.Decode.decode(as: %Dwolla.Customer{})
   end
   defp map_body(body, :funding_source) do
-    Poison.Decode.decode(body, as: %FundingSource{})
+    body
+    |> to_snake_case()
+    |> Poison.Decode.decode(as: %Dwolla.FundingSource{})
   end
   defp map_body(%{"_links" => links} = body, :transfer) do
-    transfer = Poison.Decode.decode(body, as: %Transfer{amount: %Amount{}, metadata: %Metadata{}})
+    transfer =
+      body
+      |> to_snake_case()
+      |> Poison.Decode.decode(as: %Dwolla.Transfer{
+          amount: %Dwolla.Transfer.Amount{},
+          metadata: %Dwolla.Transfer.Metadata{}}
+        )
     can_cancel = Map.has_key?(links, "cancel")
     [source_resource, source_resource_id] = get_transfer_source_from_body(body)
     [dest_resource, dest_resource_id] = get_transfer_destination_from_body(body)
@@ -126,30 +170,53 @@ defmodule Dwolla.Utils do
     |> Map.put(:can_cancel, can_cancel)
   end
   defp map_body(body, :event) do
-    event = Poison.Decode.decode(body, as: %Event{})
+    event =
+      body
+      |> to_snake_case()
+      |> Poison.Decode.decode(as: %Dwolla.Event{})
     resource = get_resource_from_body(body)
     %{event | resource: resource}
   end
   defp map_body(body, :webhook_subscription) do
-    Poison.Decode.decode(body, as: %WebhookSubscription{})
+    body
+    |> to_snake_case()
+    |> Poison.Decode.decode(as: %Dwolla.WebhookSubscription{})
   end
   defp map_body(body, :webhook) do
-    Poison.Decode.decode(body, as: %Webhook{attempts: [%Attempt{request: %Request{}, response: %Response{}}]})
+    body
+    |> to_snake_case()
+    |> Poison.Decode.decode(as: %Dwolla.Webhook{
+        attempts: [%Dwolla.Webhook.Attempt{
+          request: %Dwolla.Webhook.Attempt.Request{},
+          response: %Dwolla.Webhook.Attempt.Response{}
+        }]
+      })
   end
   defp map_body(body, :retry) do
-    Poison.Decode.decode(body, as: %Retry{})
+    body
+    |> to_snake_case()
+    |> Poison.Decode.decode(as: %Dwolla.Webhook.Retry{})
   end
   defp map_body(body, :failure) do
-    Poison.Decode.decode(body, as: %Failure{})
+    body
+    |> to_snake_case()
+    |> Poison.Decode.decode(as: %Dwolla.Transfer.Failure{})
   end
   defp map_body(%{"balance" => balance} = body, :balance) do
-    Poison.Decode.decode(Map.merge(balance, body), as: %Balance{})
+    body
+    |> to_snake_case()
+    |> Map.merge(to_snake_case(balance))
+    |> Poison.Decode.decode(as: %Dwolla.FundingSource.Balance{})
   end
   defp map_body(body, :token) do
-    Poison.Decode.decode(body, as: %Token{})
+    body
+    |> to_snake_case()
+    |> Poison.Decode.decode(as: %Dwolla.Token{})
   end
   defp map_body(body, :document) do
-    Poison.Decode.decode(body, as: %Document{})
+    body
+    |> to_snake_case()
+    |> Poison.Decode.decode(as: %Dwolla.Document{})
   end
 
   defp get_transfer_source_from_body(%{"_links" => %{"source" => %{"href" => url}}} = _body) do
@@ -203,7 +270,9 @@ defmodule Dwolla.Utils do
     |> format_error()
   end
   defp format_error(body) do
-    Poison.Decode.decode(body, as: %Errors{errors: [%Errors.Error{}]})
+    body
+    |> to_snake_case()
+    |> Poison.Decode.decode(as: %Dwolla.Errors{errors: [%Dwolla.Errors.Error{}]})
   end
 
   @doc """

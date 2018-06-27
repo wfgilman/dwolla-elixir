@@ -1,29 +1,33 @@
 defmodule Dwolla.Webhook do
   @moduledoc """
-  Functions for working with Dwolla webhooks.
+  Functions for `webhooks` endpoint.
   """
 
   alias Dwolla.Utils
 
-  defstruct id: nil, topic: nil, accountId: nil, eventId: nil, subscriptionId: nil,
-            attempts: nil
+  defstruct id: nil, topic: nil, account_id: nil, event_id: nil,
+            subscription_id: nil, attempts: nil
 
   @type t :: %__MODULE__{id: String.t,
                          topic: String.t,
-                         accountId: String.t,
-                         eventId: String.t,
-                         subscriptionId: String.t,
+                         account_id: String.t,
+                         event_id: String.t,
+                         subscription_id: String.t,
                          attempts: [Dwolla.Webhook.Attempt.t]
                         }
 
   @type token :: String.t
   @type id :: String.t
-  @type error_msg :: map | list
+  @type error :: HTTPoison.Error.t | Dwolla.Errors.t | tuple
+  @type location :: %{id: String.t}
 
   @endpoint "webhooks"
 
   defmodule Attempt do
-    @moduledoc false
+    @moduledoc """
+    Dwolla Webhook Attempt data structure.
+    """
+
     defstruct id: nil, request: nil, response: nil
     @type t :: %__MODULE__{id: String.t,
                            request: Dwolla.Webhook.Attempt.Request.t,
@@ -31,7 +35,10 @@ defmodule Dwolla.Webhook do
                           }
 
     defmodule Request do
-      @moduledoc false
+      @moduledoc """
+      Dwolla Webhook Attempt Request data structure.
+      """
+
       defstruct timestamp: nil, url: nil, headers: [], body: nil
       @type t :: %__MODULE__{timestamp: String.t,
                              url: String.t,
@@ -41,18 +48,24 @@ defmodule Dwolla.Webhook do
     end
 
     defmodule Response do
-      @moduledoc false
-      defstruct timestamp: nil, headers: [], statusCode: nil, body: nil
+      @moduledoc """
+      Dwolla Webhook Attempt Response data structure.
+      """
+
+      defstruct timestamp: nil, headers: [], status_code: nil, body: nil
       @type t :: %__MODULE__{timestamp: String.t,
                              headers: list,
-                             statusCode: integer,
+                             status_code: integer,
                              body: String.t
                             }
     end
   end
 
   defmodule Retry do
-    @moduledoc false
+    @moduledoc """
+    Dwolla Webhook Retry data structure.
+    """
+
     defstruct id: nil, timestamp: nil
     @type t :: %__MODULE__{id: String.t, timestamp: String.t}
   end
@@ -60,7 +73,7 @@ defmodule Dwolla.Webhook do
   @doc """
   Gets a webhook by id.
   """
-  @spec get(token, id) :: {:ok, Dwolla.Webhook.t} | {:error, error_msg}
+  @spec get(token, id) :: {:ok, Dwolla.Webhook.t} | {:error, error}
   def get(token, id) do
     endpoint = @endpoint <> "/#{id}"
     Dwolla.make_request_with_token(:get, endpoint, token)
@@ -70,7 +83,7 @@ defmodule Dwolla.Webhook do
   @doc """
   Retries a webhooks by id.
   """
-  @spec retry(token, id) :: {:ok, map} | {:error, error_msg}
+  @spec retry(token, id) :: {:ok, location} | {:error, error}
   def retry(token, id) do
     endpoint = @endpoint <> "/#{id}/retries"
     Dwolla.make_request_with_token(:post, endpoint, token)
@@ -81,7 +94,7 @@ defmodule Dwolla.Webhook do
   Gets webhook retries by id.
   """
   @spec list_retries(token, id) ::
-    {:ok, [Dwolla.Webhook.Retry]} | {:error, error_msg}
+    {:ok, [Dwolla.Webhook.Retry.t]} | {:error, error}
   def list_retries(token, id) do
     endpoint = @endpoint <> "/#{id}/retries"
     Dwolla.make_request_with_token(:get, endpoint, token)

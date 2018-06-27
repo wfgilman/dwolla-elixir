@@ -1,6 +1,6 @@
 defmodule Dwolla.Transfer do
   @moduledoc """
-  Functions for working with Dwolla `transfers` endpoint.
+  Functions for `transfers` endpoint.
   """
 
   alias Dwolla.Utils
@@ -25,18 +25,26 @@ defmodule Dwolla.Transfer do
 
   @type token :: String.t
   @type id :: String.t
-  @type error_msg :: map | list
+  @type params :: %{required(atom) => any}
+  @type error :: HTTPoison.Error.t | Dwolla.Errors.t | tuple
+  @type location :: %{id: String.t}
 
   @endpoint "transfers"
 
   defmodule Amount do
-    @moduledoc false
+    @moduledoc """
+    Dwolla Transfer Amount data structure.
+    """
+
     defstruct value: nil, currency: nil
     @type t :: %__MODULE__{value: String.t, currency: String.t}
   end
 
   defmodule Metadata do
-    @moduledoc false
+    @moduledoc """
+    Dwolla Transfer Metatdata data structure.
+    """
+
     defstruct vendor: nil, origin_trans_id: nil, title: nil, note: nil
     @type t :: %__MODULE__{vendor: String.t,
                            origin_trans_id: String.t,
@@ -46,15 +54,43 @@ defmodule Dwolla.Transfer do
   end
 
   defmodule Failure do
-    @moduledoc false
+    @moduledoc """
+    Dwolla Transfer Failure data structure.
+    """
+
     defstruct code: nil, description: nil
     @type t :: %__MODULE__{code: String.t, description: String.t}
   end
 
   @doc """
   Initiates a transfer.
+
+  The parameters are verbose because of the many options available to the user
+  for setting the source and destination of the funds in the `href` field.
+
+  Parameters
+  ```
+  %{
+    _links: %{
+      source: %{
+        href: "https://api-sandbox.dwolla.com/funding-sources/..."
+      },
+      destination: %{
+        href: "https://api-sandbox.dwolla.com/funding-sources/..."
+      }
+    },
+    amount: %{
+      value: 100.00,
+      currency: "USD"
+    },
+    metadata: %{
+      vendor: "Acme Inc.",
+      note: "Invoice #12314"
+    }
+  }
+  ```
   """
-  @spec initiate(token, map) :: {:ok, map} | {:error, error_msg}
+  @spec initiate(token, params, any | nil) :: {:ok, location} | {:error, error}
   def initiate(token, params, idempotency_key \\ nil) do
     headers = Utils.idempotency_header(idempotency_key || params)
     Dwolla.make_request_with_token(:post, @endpoint, token, params, headers)
@@ -64,7 +100,7 @@ defmodule Dwolla.Transfer do
   @doc """
   Gets a transfer by id.
   """
-  @spec get(token, id) :: {:ok, Dwolla.Transfer.t} | {:error, error_msg}
+  @spec get(token, id) :: {:ok, Dwolla.Transfer.t} | {:error, error}
   def get(token, id) do
     endpoint = @endpoint <> "/#{id}"
     Dwolla.make_request_with_token(:get, endpoint, token)
@@ -74,8 +110,7 @@ defmodule Dwolla.Transfer do
   @doc """
   Gets reason for a transfer's failure.
   """
-  @spec get_transfer_failure_reason(token, id) ::
-    {:ok, Dwolla.Transfer.Failure} | {:error, error_msg}
+  @spec get_transfer_failure_reason(token, id) :: {:ok, Dwolla.Transfer.Failure} | {:error, error}
   def get_transfer_failure_reason(token, id) do
     endpoint = @endpoint <> "/#{id}/failure"
     Dwolla.make_request_with_token(:get, endpoint, token)
@@ -85,7 +120,7 @@ defmodule Dwolla.Transfer do
   @doc """
   Cancels a transfer.
   """
-  @spec cancel(token, id) :: {:ok, Dwolla.Transfer.t} | {:error, error_msg}
+  @spec cancel(token, id) :: {:ok, Dwolla.Transfer.t} | {:error, error}
   def cancel(token, id) do
     endpoint = @endpoint <> "/#{id}"
     params = %{status: "cancelled"}

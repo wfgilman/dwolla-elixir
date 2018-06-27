@@ -12,6 +12,50 @@ defmodule Dwolla.UtilsTest do
       assert {:error, body} = Utils.handle_resp(resp, :any)
       assert body == payload
     end
+
+    test "to_snake_case/1 converts string keys to snake case" do
+      params = %{
+        "firstName" => "Steve",
+        "lastName" => "Rogers",
+        "dateOfBirth" => "1918-07-04",
+        "amount" => %{
+          "value" => 100.0,
+          "currency" => "USD"
+        }
+      }
+
+      assert Utils.to_snake_case(params) == %{
+        "first_name" => "Steve",
+        "last_name" => "Rogers",
+        "date_of_birth" => "1918-07-04",
+        "amount" => %{
+          "value" => 100.0,
+          "currency" => "USD"
+        }
+      }
+    end
+
+    test "to_camel_case/1 converts atom keys to camel case" do
+      params = %{
+        first_name: "Steve",
+        last_name: "Rogers",
+        date_of_birth: "1918-07-04",
+        amount: %{
+          value: 100.0,
+          currency: "USD"
+        }
+      }
+
+      assert Utils.to_camel_case(params) == %{
+        "firstName" => "Steve",
+        "lastName" => "Rogers",
+        "dateOfBirth" => "1918-07-04",
+        "amount" => %{
+          "value" => 100.0,
+          "currency" => "USD"
+        }
+      }
+    end
   end
 
   defp success_resp(code, body) do

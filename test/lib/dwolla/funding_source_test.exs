@@ -31,7 +31,7 @@ defmodule Dwolla.FundingSourceTest do
       refute resp.status == nil
       refute resp.type == nil
       refute resp.channels == nil
-      refute resp.bankName == nil
+      refute resp.bank_name == nil
     end
 
     test "update/3 requests POST and returns Dwolla.FundingSource", %{bypass: bypass} do

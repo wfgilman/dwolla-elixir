@@ -52,7 +52,7 @@ defmodule DwollaTest do
       assert {:ok, %HTTPoison.Response{}} = Dwolla.make_request_with_token(:get, "any", "token")
     end
 
-    test "make_request_with_token/3 raises when HTTP call fails", %{bypass: bypass} do
+    test "make_request_with_token/3 returns error tuple when HTTP call fails", %{bypass: bypass} do
       Bypass.down(bypass)
 
       assert {:error, %HTTPoison.Error{}} =  Dwolla.make_request_with_token(:get, "any", "token")
@@ -69,7 +69,7 @@ defmodule DwollaTest do
       Dwolla.make_oauth_token_request(%{}, %{client_id: "id", client_secret: "shhhh"})
     end
 
-    test "make_oauth_token_request/2 raises when HTTP call fails", %{bypass: bypass} do
+    test "make_oauth_token_request/2 returns error tuple when HTTP call fails", %{bypass: bypass} do
       Bypass.down(bypass)
 
       assert {:error, %HTTPoison.Error{}} = Dwolla.make_oauth_token_request(%{}, %{})
@@ -105,6 +105,17 @@ defmodule DwollaTest do
       end
 
       assert {:ok, %HTTPoison.Response{body: {:invalid, _}}} = Dwolla.make_request_with_token(:get, "any", "token")
+    end
+
+    test "make_request_with_token/3 makes payload camel case", %{bypass: bypass} do
+      Bypass.expect bypass, fn conn ->
+        {:ok, body, _conn} = Conn.read_body(conn)
+        assert "POST" == conn.method
+        assert "{\"firstName\":\"Steve\"}" == body
+        Conn.resp(conn, 200, "")
+      end
+
+      Dwolla.make_request_with_token(:post, "any", "token", %{first_name: "Steve"})
     end
   end
 

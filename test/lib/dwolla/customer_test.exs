@@ -25,10 +25,10 @@ defmodule Dwolla.CustomerTest do
       end
 
       params = %{
-        firstName: "Will",
-        lastName: "Gilman",
+        first_name: "Will",
+        last_name: "Gilman",
         email: "will@example.com",
-        ipAddress: "10.0.0.1"
+        ip_address: "10.0.0.1"
       }
 
       assert {:ok, resp} = Customer.create_unverified("token", params)
@@ -50,16 +50,16 @@ defmodule Dwolla.CustomerTest do
       end
 
       params = %{
-        firstName: "Cary",
-        lastName: "Grant",
+        first_name: "Cary",
+        last_name: "Grant",
         email: "tocatchathief@example.com",
-        ipAddress: "10.0.0.1",
+        ip_address: "10.0.0.1",
         type: "personal",
         address1: "19218 Hollywood Blvd",
         city: "Los Angeles",
         state: "CA",
-        postalCode: "90028",
-        dateOfBirth: "1904-01-18",
+        postal_code: "90028",
+        date_of_birth: "1904-01-18",
         ssn: "1234",
         phone: "1234567890"
       }
@@ -81,16 +81,16 @@ defmodule Dwolla.CustomerTest do
       end
 
       params = %{
-        firstName: "Will",
-        lastName: "Gilman",
+        first_name: "Will",
+        last_name: "Gilman",
         email: "will@example.com",
         type: "personal",
         address1: "2340 Chicago St",
         address2: "Apt 3",
         city: "Bodega Bay",
         state: "CA",
-        postalCode: "94923",
-        dateOfBirth: "1990-03-14",
+        postal_code: "94923",
+        date_of_birth: "1990-03-14",
         ssn: "4321",
         phone: "0987654321"
       }
@@ -127,8 +127,8 @@ defmodule Dwolla.CustomerTest do
       assert {:ok, resp} = Customer.get("token", "id")
       assert resp.__struct__ == Dwolla.Customer
       refute resp.id == nil
-      refute resp.firstName == nil
-      refute resp.lastName == nil
+      refute resp.first_name == nil
+      refute resp.last_name == nil
       refute resp.email == nil
       refute resp.type == nil
       refute resp.status == nil
@@ -136,7 +136,7 @@ defmodule Dwolla.CustomerTest do
       refute resp.address1 == nil
       refute resp.city == nil
       refute resp.phone == nil
-      refute resp.postalCode == nil
+      refute resp.postal_code == nil
       refute resp.state == nil
     end
 
@@ -174,8 +174,8 @@ defmodule Dwolla.CustomerTest do
       end
 
       params = %{
-        routingNumber: "114923756",
-        accountNumber: "123456788",
+        routing_number: "114923756",
+        account_number: "123456788",
         type: "checking",
         name: "Big Ben's Checking Account"
       }

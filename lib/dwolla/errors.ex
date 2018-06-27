@@ -4,7 +4,10 @@ defmodule Dwolla.Errors do
   """
 
   defstruct code: nil, message: nil, errors: []
-  @type t :: %__MODULE__{code: String.t, message: String.t, errors: list}
+  @type t :: %__MODULE__{code: String.t,
+                         message: String.t,
+                         errors: [Dwolla.Errors.Error.t]
+                        }
 
   defmodule Error do
     @moduledoc """

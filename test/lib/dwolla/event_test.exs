@@ -59,7 +59,7 @@ defmodule Dwolla.EventTest do
       assert resp.__struct__ == Dwolla.Event
       refute resp.created == nil
       refute resp.id == nil
-      refute resp.resourceId == nil
+      refute resp.resource_id == nil
       refute resp.topic == nil
     end
 
