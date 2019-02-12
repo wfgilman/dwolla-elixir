@@ -79,15 +79,23 @@ defmodule Dwolla.Utils do
     |> Stream.map(fn {k, v} -> {to_string(k), v} end)
     |> Stream.map(fn {k, v} ->
         if is_map(v) do
-          {Recase.to_camel(k), to_camel_case(v)}
+          {key_to_camel_case(k), to_camel_case(v)}
         else
-          {Recase.to_camel(k), v}
+          {key_to_camel_case(k), v}
         end
       end)
     |> Enum.into(%{})
   end
   def to_camel_case(payload) do
     payload
+  end
+
+  defp key_to_camel_case(k) when k in ["_links", "_embedded"] do
+    k
+  end
+
+  defp key_to_camel_case(k) do
+    Recase.to_camel(k)
   end
 
   @doc """
