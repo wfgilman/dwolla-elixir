@@ -37,6 +37,12 @@ defmodule Dwolla.UtilsTest do
 
     test "to_camel_case/1 converts atom keys to camel case" do
       params = %{
+        _links: %{
+          foo: "bar"
+        },
+        _embedded: %{
+          baz: "qux"
+        },
         first_name: "Steve",
         last_name: "Rogers",
         date_of_birth: "1918-07-04",
@@ -47,6 +53,12 @@ defmodule Dwolla.UtilsTest do
       }
 
       assert Utils.to_camel_case(params) == %{
+        "_links" => %{
+          "foo" => "bar"
+        },
+        "_embedded" => %{
+          "baz" => "qux"
+        },
         "firstName" => "Steve",
         "lastName" => "Rogers",
         "dateOfBirth" => "1918-07-04",
