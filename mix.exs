@@ -7,7 +7,7 @@ defmodule Dwolla.Mixfile do
 
   def project do
     [app: :dwolla,
-     version: "1.0.1",
+     version: "1.0.2",
      description: @description,
      elixir: "~> 1.5",
      elixirc_paths: elixirc_paths(Mix.env),
