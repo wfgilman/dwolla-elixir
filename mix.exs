@@ -29,12 +29,12 @@ defmodule Dwolla.Mixfile do
 
   defp deps do
     [
-     {:httpoison, "~> 0.13"},
+     {:httpoison, "~> 1.5"},
      {:poison, "~> 3.0"},
-     {:recase, "~> 0.2"},
-     {:bypass, "~> 0.8", only: [:test]},
-     {:credo, "~> 0.5", only: [:dev], runtime: false},
-     {:excoveralls, "~> 0.6", only: [:test]},
+     {:recase, "~> 0.4"},
+     {:bypass, "~> 1.0", only: [:test]},
+     {:credo, "~> 1.0", only: [:dev], runtime: false},
+     {:excoveralls, "~> 0.10", only: [:test]},
      {:ex_doc, "~> 0.19", only: [:dev], runtime: false},
     ]
   end
