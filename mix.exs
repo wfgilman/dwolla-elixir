@@ -32,11 +32,11 @@ defmodule Dwolla.Mixfile do
     [
       {:httpoison, "~> 1.5"},
       {:poison, "~> 4.0"},
-      {:recase, "~> 0.4"},
+      {:recase, "~> 0.6"},
       {:bypass, "~> 1.0", only: [:test]},
-      {:credo, "~> 1.0", only: [:dev], runtime: false},
-      {:excoveralls, "~> 0.10", only: [:test]},
-      {:ex_doc, "~> 0.19", only: [:dev], runtime: false}
+      {:credo, "~> 1.4", only: [:dev], runtime: false},
+      {:excoveralls, "~> 0.13", only: [:test]},
+      {:ex_doc, "~> 0.22", only: [:dev], runtime: false}
     ]
   end
 
