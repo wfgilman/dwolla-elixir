@@ -6,6 +6,7 @@
 Elixir Library for Dwolla
 
 Supported endpoints:
+
 - [ ] Accounts
 - [x] Customers
 - [x] Documents
@@ -36,15 +37,15 @@ you need to add your Dwolla client_id and client_secret to your config.
 ```elixir
 config :dwolla,
   root_uri: "https://api.dwolla.com/",
-  oauth_uri: "https://dwolla.com/oauth/v2/token",
   client_id: "your_client_id",
   client_secret: "your_client_secret",
   access_token: nil,
   httpoison_options: [timeout: 10_000, recv_timeout: 10_000],
 ```
 
-The `root_uri` and `oauth_uri` are configured by `mix` environment by default. You
+The `root_uri` is configured by `mix` environment by default. You
 can override them in your configuration.
+
 - `dev` - sandbox
 - `prod` - production
 
@@ -57,6 +58,7 @@ This library uses [bypass](https://github.com/PSPDFKit-labs/bypass) to simulate 
 Run tests using `mix test`.
 
 Before making pull requests, run the coverage and style checks.
+
 ```elixir
 mix coveralls
 mix credo

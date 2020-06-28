@@ -7,7 +7,6 @@ defmodule DwollaTest do
   setup do
     bypass = Bypass.open()
     Application.put_env(:dwolla, :root_uri, "http://localhost:#{bypass.port}/")
-    Application.put_env(:dwolla, :oauth_uri, "http://localhost:#{bypass.port}/")
     {:ok, bypass: bypass}
   end
 
@@ -33,13 +32,6 @@ defmodule DwollaTest do
       Application.put_env(:dwolla, :root_uri, nil)
       assert_raise Dwolla.MissingRootUriError, fn ->
         Dwolla.make_request_with_token(:get, "any", "token")
-      end
-    end
-
-    test "make_oauth_token_request/2 raises when oauth_uri is missing" do
-      Application.put_env(:dwolla, :oauth_uri, nil)
-      assert_raise Dwolla.MissingOauthUriError, fn ->
-        Dwolla.make_oauth_token_request(%{}, %{})
       end
     end
 
@@ -72,7 +64,8 @@ defmodule DwollaTest do
     test "make_oauth_token_request/2 returns error tuple when HTTP call fails", %{bypass: bypass} do
       Bypass.down(bypass)
 
-      assert {:error, %HTTPoison.Error{}} = Dwolla.make_oauth_token_request(%{}, %{})
+      assert {:error, %HTTPoison.Error{}} =
+               Dwolla.make_oauth_token_request(%{}, %{client_id: "id", client_secret: "shhhh"})
     end
 
     test "make_request_with_token/3 sets headers correctly", %{bypass: bypass} do
@@ -96,7 +89,7 @@ defmodule DwollaTest do
         Conn.resp(conn, 200, "{\"status\":\"ok\"}")
       end
 
-      Dwolla.make_oauth_token_request(%{}, %{})
+      Dwolla.make_oauth_token_request(%{}, %{client_id: "id", client_secret: "shhhh"})
     end
 
     test "make_request/2 handle XML response", %{bypass: bypass} do

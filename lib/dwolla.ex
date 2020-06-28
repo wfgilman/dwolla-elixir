@@ -9,6 +9,8 @@ defmodule Dwolla do
 
   alias Dwolla.Utils
 
+  @token_endpoint "token"
+
   defmodule MissingClientSecretError do
     defexception message: """
     Client secret is missing. Please add client_id to your config.exs file.
@@ -33,17 +35,6 @@ defmodule Dwolla do
 
     config :dwolla, root_uri: "https://api-sandbox.dwolla.com/" (development)
     config :dwolla, root_uri: "https://api.dwolla.com/" (production)
-    """
-  end
-
-  defmodule MissingOauthUriError do
-    defexception message: """
-    The oauth_uri is required to specify the Dwolla environment to which you are
-    making authorization requests, i.e. development or production. Please configure
-    oauth_uri in your config.exs file.
-
-    config :dwolla, oauth_uri: "https://sandbox.dwolla.com/oauth/v2/" (development)"
-    config :dwolla, oauth_uri: "https://www.dwolla.com/oauth/v2/" (production)
     """
   end
 
@@ -84,16 +75,10 @@ defmodule Dwolla do
   @spec make_oauth_token_request(map, map, list) ::
     {:ok, HTTPoison.Response.t} | {:error, HTTPoison.Error.t}
   def make_oauth_token_request(params, cred, options \\ []) do
-    endpoint = require_oauth_uri()
     rb = Utils.encode_params(params, cred)
-    rh = get_request_headers(nil) |> Map.to_list()
+    rh = cred |> get_request_headers() |> Map.to_list()
     options = httpoison_request_options() ++ options
-    case HTTPoison.request(:post, endpoint, rb, rh, options) do
-      {:ok, resp} ->
-        {:ok, %{resp | body: Poison.Parser.parse!(resp.body)}}
-      resp ->
-        resp
-    end
+    request(:post, @token_endpoint, rb, rh, options)
   end
 
   def process_url(endpoint) do
@@ -108,10 +93,14 @@ defmodule Dwolla do
     end
   end
 
-  defp get_request_headers(nil) do
-    Map.new
+  defp get_request_headers(%{client_id: client_id, client_secret: client_secret}) do
+    encoded_auth_params = Base.encode64("#{client_id}:#{client_secret}")
+
+    Map.new()
+    |> Map.put("Authorization", "Bearer #{encoded_auth_params}")
     |> Map.put("Content-Type", "application/x-www-form-urlencoded")
   end
+  
   defp get_request_headers(access_token) do
     Map.new
     |> Map.put("Authorization", "Bearer #{access_token}")
@@ -133,13 +122,6 @@ defmodule Dwolla do
   defp require_root_uri do
     case Application.get_env(:dwolla, :root_uri) || :not_found do
       :not_found -> raise MissingRootUriError
-      value -> value
-    end
-  end
-
-  defp require_oauth_uri do
-    case Application.get_env(:dwolla, :oauth_uri) || :not_found do
-      :not_found -> raise MissingOauthUriError
       value -> value
     end
   end
