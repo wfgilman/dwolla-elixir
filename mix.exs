@@ -6,17 +6,18 @@ defmodule Dwolla.Mixfile do
   """
 
   def project do
-    [app: :dwolla,
-     version: "1.0.2",
-     description: @description,
-     elixir: "~> 1.5",
-     elixirc_paths: elixirc_paths(Mix.env),
-     package: package(),
-     deps: deps(),
-     docs: docs(),
-     source_url: "https://github.com/wfgilman/dwolla-elixir",
-     test_coverage: [tool: ExCoveralls],
-     preferred_cli_env: [coveralls: :test, "coveralls.detail": :test]
+    [
+      app: :dwolla,
+      version: "1.0.2",
+      description: @description,
+      elixir: "~> 1.5",
+      elixirc_paths: elixirc_paths(Mix.env()),
+      package: package(),
+      deps: deps(),
+      docs: docs(),
+      source_url: "https://github.com/wfgilman/dwolla-elixir",
+      test_coverage: [tool: ExCoveralls],
+      preferred_cli_env: [coveralls: :test, "coveralls.detail": :test]
     ]
   end
 
@@ -29,13 +30,13 @@ defmodule Dwolla.Mixfile do
 
   defp deps do
     [
-     {:httpoison, "~> 1.5"},
-     {:poison, "~> 3.0"},
-     {:recase, "~> 0.4"},
-     {:bypass, "~> 1.0", only: [:test]},
-     {:credo, "~> 1.0", only: [:dev], runtime: false},
-     {:excoveralls, "~> 0.10", only: [:test]},
-     {:ex_doc, "~> 0.19", only: [:dev], runtime: false},
+      {:httpoison, "~> 1.5"},
+      {:poison, "~> 3.0"},
+      {:recase, "~> 0.6"},
+      {:bypass, "~> 1.0", only: [:test]},
+      {:credo, "~> 1.4", only: [:dev], runtime: false},
+      {:excoveralls, "~> 0.13", only: [:test]},
+      {:ex_doc, "~> 0.22", only: [:dev], runtime: false}
     ]
   end
 

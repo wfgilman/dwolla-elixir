@@ -1,23 +1,22 @@
 defmodule Dwolla.TokenTest do
-
   use ExUnit.Case
 
   import Dwolla.Factory
 
   setup do
     bypass = Bypass.open()
-    Application.put_env(:dwolla, :oauth_uri, "http://localhost:#{bypass.port}/")
+    Application.put_env(:dwolla, :root_uri, "http://localhost:#{bypass.port}/")
     {:ok, bypass: bypass}
   end
 
   describe "token" do
-
     test "get/1 requests POST and returns Dwolla.Token", %{bypass: bypass} do
       body = http_response_body(:token)
-      Bypass.expect bypass, fn conn ->
+
+      Bypass.expect(bypass, fn conn ->
         assert "POST" == conn.method
         Plug.Conn.resp(conn, 200, Poison.encode!(body))
-      end
+      end)
 
       assert {:ok, resp} = Dwolla.Token.get()
       assert resp.__struct__ == Dwolla.Token
@@ -31,6 +30,5 @@ defmodule Dwolla.TokenTest do
 
       assert {:error, %HTTPoison.Error{}} = Dwolla.Token.get()
     end
-
   end
 end
