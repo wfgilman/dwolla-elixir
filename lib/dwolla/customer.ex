@@ -31,7 +31,7 @@ defmodule Dwolla.Customer do
 
   @endpoint "customers"
 
-  @unverified_customer ["first_name", "last_name", "email", "ip_address"]
+  @unverified_customer ["first_name", "last_name", "email"]
 
   @verified_customer   @unverified_customer ++ ["type", "address1", "city",
                        "state", "postal_code", "date_of_birth", "ssn"]
