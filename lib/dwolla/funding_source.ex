@@ -6,7 +6,7 @@ defmodule Dwolla.FundingSource do
   alias Dwolla.Utils
 
   defstruct id: nil, created: nil, name: nil, removed: false, status: nil,
-            type: nil, channels: [], bank_name: nil
+            type: nil, channels: [], bank_name: nil, bank_account_type: nil
 
   @type t :: %__MODULE__{id: String.t,
                          created: String.t,
@@ -15,7 +15,8 @@ defmodule Dwolla.FundingSource do
                          status: String.t, # "verified" | "unverified"
                          type: String.t, # "bank" | "balance"
                          channels: [String.t],
-                         bank_name: String.t
+                         bank_name: String.t,
+                         bank_account_type: String.t
                          }
   @type token :: String.t
   @type id :: String.t
