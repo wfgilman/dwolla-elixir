@@ -5,32 +5,22 @@ defmodule Dwolla.FundingSource do
 
   alias Dwolla.Utils
 
-  defstruct id: nil,
-            created: nil,
-            name: nil,
-            removed: false,
-            status: nil,
-            type: nil,
-            channels: [],
-            bank_name: nil,
-            bank_account_type: nil
+  defstruct id: nil, created: nil, name: nil, removed: false, status: nil,
+            type: nil, channels: [], bank_name: nil, bank_account_type: nil
 
-  @type t :: %__MODULE__{
-          id: String.t(),
-          created: String.t(),
-          name: String.t(),
-          removed: boolean,
-          # "verified" | "unverified"
-          status: String.t(),
-          # "bank" | "balance"
-          type: String.t(),
-          channels: [String.t()],
-          bank_name: String.t(),
-          bank_account_type: String.t()
-        }
-  @type token :: String.t()
-  @type id :: String.t()
-  @type error :: HTTPoison.Error.t() | Dwolla.Errors.t() | tuple
+  @type t :: %__MODULE__{id: String.t,
+                         created: String.t,
+                         name: String.t,
+                         removed: boolean,
+                         status: String.t, # "verified" | "unverified"
+                         type: String.t, # "bank" | "balance"
+                         channels: [String.t],
+                         bank_name: String.t,
+                         bank_account_type: String.t
+                         }
+  @type token :: String.t
+  @type id :: String.t
+  @type error :: HTTPoison.Error.t | Dwolla.Errors.t | tuple
 
   @endpoint "funding-sources"
 
@@ -40,16 +30,18 @@ defmodule Dwolla.FundingSource do
     """
 
     defstruct value: nil, currency: nil, last_updated: nil
-    @type t :: %__MODULE__{value: String.t(), currency: String.t(), last_updated: String.t()}
+    @type t :: %__MODULE__{value: String.t,
+                           currency: String.t,
+                           last_updated: String.t
+                          }
   end
 
   @doc """
   Gets a funding source by id.
   """
-  @spec get(token, id) :: {:ok, Dwolla.FundingSource.t()} | {:error, error}
+  @spec get(token, id) :: {:ok, Dwolla.FundingSource.t} | {:error, error}
   def get(token, id) do
     endpoint = @endpoint <> "/#{id}"
-
     Dwolla.make_request_with_token(:get, endpoint, token)
     |> Utils.handle_resp(:funding_source)
   end
@@ -57,7 +49,7 @@ defmodule Dwolla.FundingSource do
   @doc """
   Updates the name of a funding source.
   """
-  @spec update_name(token, id, String.t()) :: {:ok, Dwolla.FundingSource.t()} | {:error, error}
+  @spec update_name(token, id, String.t) :: {:ok, Dwolla.FundingSource.t} | {:error, error}
   def update_name(token, id, name) do
     update(token, id, %{name: name})
   end
@@ -65,7 +57,7 @@ defmodule Dwolla.FundingSource do
   @doc """
   Removes a funding source.
   """
-  @spec remove(token, id) :: {:ok, Dwolla.FundingSource.t()} | {:error, error}
+  @spec remove(token, id) :: {:ok, Dwolla.FundingSource.t} | {:error, error}
   def remove(token, id) do
     update(token, id, %{removed: true})
   end
@@ -73,7 +65,6 @@ defmodule Dwolla.FundingSource do
   defp update(token, id, params) do
     endpoint = @endpoint <> "/#{id}"
     headers = Utils.idempotency_header(params)
-
     Dwolla.make_request_with_token(:post, endpoint, token, params, headers)
     |> Utils.handle_resp(:funding_source)
   end
@@ -81,35 +72,11 @@ defmodule Dwolla.FundingSource do
   @doc """
   Gets the balance of a funding source.
   """
-  @spec balance(token, id) :: {:ok, Dwolla.FundingSource.Balance.t()} | {:error, error}
+  @spec balance(token, id) :: {:ok, Dwolla.FundingSource.Balance.t} | {:error, error}
   def balance(token, id) do
     endpoint = @endpoint <> "/#{id}/balance"
-
     Dwolla.make_request_with_token(:get, endpoint, token)
     |> Utils.handle_resp(:balance)
   end
 
-  def create(token, params) do
-    endpoint = @endpoint
-    headers = Utils.idempotency_header(params)
-
-    Dwolla.make_request_with_token(:post, endpoint, token, params, headers)
-    |> Utils.handle_resp(:funding_source)
-  end
-
-  def initiate_micro_deposits(token, id) do
-    endpoint = @endpoint <> "/#{id}/micro-deposits"
-    headers = Utils.idempotency_header(id)
-
-    Dwolla.make_request_with_token(:post, endpoint, token, %{}, headers)
-    # |> Utils.handle_resp(:funding_source)
-  end
-
-  def verify_micro_deposits(token, id, params) do
-    endpoint = @endpoint <> "/#{id}/micro-deposits"
-    headers = Utils.idempotency_header(params)
-
-    Dwolla.make_request_with_token(:post, endpoint, token, params, headers)
-    # |> Utils.handle_resp()
-  end
 end
