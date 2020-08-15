@@ -88,7 +88,10 @@ defmodule Dwolla do
   def process_response_body(""), do: ""
 
   def process_response_body(body) do
-    Poison.Parser.parse!(body, %{})
+    case Poison.decode(body) do
+      {:ok, parsed_body} -> parsed_body
+      {:error, _} -> {:invalid, body}
+    end
   end
 
   defp get_request_headers(%{client_id: client_id, client_secret: client_secret}) do
