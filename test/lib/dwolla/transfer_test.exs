@@ -68,6 +68,7 @@ defmodule Dwolla.TransferTest do
       assert resp.source_funding_source_id == "70c99528-285d-4de5-9ece-6d9b8f5cb1a4"
       assert resp.dest_resource == "customers"
       assert resp.dest_resource_id == "df1eb2aa-3d75-48a1-b882-425b579a85dc"
+      assert resp.dest_funding_source_id == "500f8e0e-dfd5-431b-83e0-cd6632e63fcb"
       assert resp.can_cancel == true
     end
 
