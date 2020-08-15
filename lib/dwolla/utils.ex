@@ -162,8 +162,10 @@ defmodule Dwolla.Utils do
       |> to_snake_case()
       |> Poison.Decode.decode(as: %Dwolla.Transfer{
           amount: %Dwolla.Transfer.Amount{},
-          metadata: %Dwolla.Transfer.Metadata{}}
-        )
+          clearing: %Dwolla.Transfer.Clearing{}
+        }
+      )
+
     can_cancel = Map.has_key?(links, "cancel")
     [source_resource, source_resource_id] = get_transfer_source_from_body(body)
     [dest_resource, dest_resource_id] = get_transfer_destination_from_body(body)

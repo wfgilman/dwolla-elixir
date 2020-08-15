@@ -1,5 +1,4 @@
 defmodule Dwolla.TransferTest do
-
   use ExUnit.Case
 
   import Dwolla.Factory
@@ -14,15 +13,15 @@ defmodule Dwolla.TransferTest do
   end
 
   describe "transfer" do
-
     test "initiate/2 requests POST and returns a new id", %{bypass: bypass} do
-      Bypass.expect bypass, fn conn ->
+      Bypass.expect(bypass, fn conn ->
         assert "POST" == conn.method
         {k, v} = http_response_header(:transfer)
+
         conn
         |> Conn.put_resp_header(k, v)
         |> Conn.resp(201, "")
-      end
+      end)
 
       params = %{
         _links: %{
@@ -45,10 +44,11 @@ defmodule Dwolla.TransferTest do
 
     test "get/2 requests GET and returns Dwolla.Transfer", %{bypass: bypass} do
       body = http_response_body(:transfer, :get)
-      Bypass.expect bypass, fn conn ->
+
+      Bypass.expect(bypass, fn conn ->
         assert "GET" == conn.method
         Conn.resp(conn, 200, body)
-      end
+      end)
 
       assert {:ok, resp} = Transfer.get("token", "id")
       assert resp.__struct__ == Dwolla.Transfer
@@ -57,7 +57,12 @@ defmodule Dwolla.TransferTest do
       refute resp.status == nil
       refute resp.amount.value == nil
       refute resp.amount.currency == nil
-      refute resp.metadata == nil
+      assert resp.metadata["customer_id"] == "1234"
+      assert resp.metadata["notes"] == "First test transfer!"
+      assert resp.correlation_id == "4293d107-fa46-4188-91b1-e60bb9621bea"
+      assert resp.individual_ach_id == "IWOBPWJZ"
+      assert resp.clearing.source == "standard"
+      assert resp.clearing.destination == nil
       assert resp.source_resource == "accounts"
       assert resp.source_resource_id == "fc81fee0-1520-4949-bc2d-73e4e11fddd9"
       assert resp.source_funding_source_id == "70c99528-285d-4de5-9ece-6d9b8f5cb1a4"
@@ -66,12 +71,15 @@ defmodule Dwolla.TransferTest do
       assert resp.can_cancel == true
     end
 
-    test "get_transfer_failure_reason/2 requests GET and returns Dwolla.Transfer.Failure", %{bypass: bypass} do
+    test "get_transfer_failure_reason/2 requests GET and returns Dwolla.Transfer.Failure", %{
+      bypass: bypass
+    } do
       body = http_response_body(:transfer, :failure)
-      Bypass.expect bypass, fn conn ->
+
+      Bypass.expect(bypass, fn conn ->
         assert "GET" == conn.method
         Conn.resp(conn, 200, body)
-      end
+      end)
 
       assert {:ok, resp} = Transfer.get_transfer_failure_reason("token", "id")
       assert resp.__struct__ == Dwolla.Transfer.Failure
@@ -81,10 +89,11 @@ defmodule Dwolla.TransferTest do
 
     test "cancel/2 requests POST and returns Dwolla.Transfer", %{bypass: bypass} do
       body = http_response_body(:transfer, :get)
-      Bypass.expect bypass, fn conn ->
+
+      Bypass.expect(bypass, fn conn ->
         assert "POST" == conn.method
         Conn.resp(conn, 200, body)
-      end
+      end)
 
       assert {:ok, resp} = Transfer.cancel("token", "id")
       assert resp.__struct__ == Dwolla.Transfer
