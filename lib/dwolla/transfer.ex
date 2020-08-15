@@ -5,29 +5,46 @@ defmodule Dwolla.Transfer do
 
   alias Dwolla.Utils
 
-  defstruct id: nil, created: nil, status: nil, amount: nil, metadata: nil,
-            source_resource: nil, source_resource_id: nil,
-            source_funding_source_id: nil, dest_resource: nil,
-            dest_resource_id: nil, can_cancel: false
+  defstruct id: nil,
+            created: nil,
+            status: nil,
+            amount: nil,
+            metadata: nil,
+            clearing: nil,
+            individual_ach_id: nil,
+            correlation_id: nil,
+            source_resource: nil,
+            source_resource_id: nil,
+            source_funding_source_id: nil,
+            dest_resource: nil,
+            dest_resource_id: nil,
+            dest_funding_source_id: nil,
+            can_cancel: false
 
-  @type t :: %__MODULE__{id: String.t,
-                         created: String.t,
-                         status: String.t, # "pending" | "processed" | "cancelled" | "failed" | "reclaimed"
-                         amount: Dwolla.Transfer.Amount.t,
-                         metadata: Dwolla.Transfer.Metadata.t,
-                         source_resource: String.t,
-                         source_resource_id: String.t,
-                         source_funding_source_id: String.t,
-                         dest_resource: String.t,
-                         dest_resource_id: String.t,
-                         can_cancel: boolean
-                        }
+  @type t :: %__MODULE__{
+          id: String.t(),
+          created: String.t(),
+          # "pending" | "processed" | "cancelled" | "failed"
+          status: String.t(),
+          amount: Dwolla.Transfer.Amount.t(),
+          metadata: map(),
+          clearing: Dwolla.Transfer.Clearing.t(),
+          individual_ach_id: String.t(),
+          correlation_id: String.t(),
+          source_resource: String.t(),
+          source_resource_id: String.t(),
+          source_funding_source_id: String.t(),
+          dest_resource: String.t(),
+          dest_resource_id: String.t(),
+          dest_funding_source_id: String.t(),
+          can_cancel: boolean
+        }
 
-  @type token :: String.t
-  @type id :: String.t
+  @type token :: String.t()
+  @type id :: String.t()
   @type params :: %{required(atom) => any}
-  @type error :: HTTPoison.Error.t | Dwolla.Errors.t | tuple
-  @type location :: %{id: String.t}
+  @type error :: HTTPoison.Error.t() | Dwolla.Errors.t() | tuple
+  @type location :: %{id: String.t()}
 
   @endpoint "transfers"
 
@@ -37,20 +54,17 @@ defmodule Dwolla.Transfer do
     """
 
     defstruct value: nil, currency: nil
-    @type t :: %__MODULE__{value: String.t, currency: String.t}
+    @type t :: %__MODULE__{value: String.t(), currency: String.t()}
   end
 
-  defmodule Metadata do
+  defmodule Clearing do
     @moduledoc """
-    Dwolla Transfer Metatdata data structure.
+    Dwolla Transfer Clearing data structure.
     """
 
-    defstruct vendor: nil, origin_trans_id: nil, title: nil, note: nil
-    @type t :: %__MODULE__{vendor: String.t,
-                           origin_trans_id: String.t,
-                           title: String.t,
-                           note: String.t
-                          }
+    defstruct source: nil, destination: nil
+
+    @type t :: %__MODULE__{source: String.t(), destination: String.t()}
   end
 
   defmodule Failure do
@@ -59,7 +73,7 @@ defmodule Dwolla.Transfer do
     """
 
     defstruct code: nil, description: nil
-    @type t :: %__MODULE__{code: String.t, description: String.t}
+    @type t :: %__MODULE__{code: String.t(), description: String.t()}
   end
 
   @doc """
@@ -93,6 +107,7 @@ defmodule Dwolla.Transfer do
   @spec initiate(token, params, any | nil) :: {:ok, location} | {:error, error}
   def initiate(token, params, idempotency_key \\ nil) do
     headers = Utils.idempotency_header(idempotency_key || params)
+
     Dwolla.make_request_with_token(:post, @endpoint, token, params, headers)
     |> Utils.handle_resp(:transfer)
   end
@@ -100,9 +115,10 @@ defmodule Dwolla.Transfer do
   @doc """
   Gets a transfer by id.
   """
-  @spec get(token, id) :: {:ok, Dwolla.Transfer.t} | {:error, error}
+  @spec get(token, id) :: {:ok, Dwolla.Transfer.t()} | {:error, error}
   def get(token, id) do
     endpoint = @endpoint <> "/#{id}"
+
     Dwolla.make_request_with_token(:get, endpoint, token)
     |> Utils.handle_resp(:transfer)
   end
@@ -113,6 +129,7 @@ defmodule Dwolla.Transfer do
   @spec get_transfer_failure_reason(token, id) :: {:ok, Dwolla.Transfer.Failure} | {:error, error}
   def get_transfer_failure_reason(token, id) do
     endpoint = @endpoint <> "/#{id}/failure"
+
     Dwolla.make_request_with_token(:get, endpoint, token)
     |> Utils.handle_resp(:failure)
   end
@@ -120,13 +137,13 @@ defmodule Dwolla.Transfer do
   @doc """
   Cancels a transfer.
   """
-  @spec cancel(token, id) :: {:ok, Dwolla.Transfer.t} | {:error, error}
+  @spec cancel(token, id) :: {:ok, Dwolla.Transfer.t()} | {:error, error}
   def cancel(token, id) do
     endpoint = @endpoint <> "/#{id}"
     params = %{status: "cancelled"}
     headers = Utils.idempotency_header(params)
+
     Dwolla.make_request_with_token(:post, endpoint, token, params, headers)
     |> Utils.handle_resp(:transfer)
   end
-
 end
