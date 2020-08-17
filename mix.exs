@@ -31,7 +31,7 @@ defmodule Dwolla.Mixfile do
   defp deps do
     [
       {:httpoison, "~> 1.5"},
-      {:poison, "~> 3.0"},
+      {:poison, "~> 4.0"},
       {:recase, "~> 0.6"},
       {:bypass, "~> 1.0", only: [:test]},
       {:credo, "~> 1.4", only: [:dev], runtime: false},
